@@ -5,23 +5,22 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.2</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <version>2.7.3</version>
     </parent>
+
     <groupId>com.light</groupId>
     <artifactId>BaseGert</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>BaseGert</name>
     <description>BaseGert</description>
     <properties>
-        <java.version>17</java.version>
+        <java.version>8</java.version>
         <kotlin.version>1.8.20-Beta</kotlin.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
-
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -33,7 +32,7 @@
         </dependency>
         <dependency>
             <groupId>cn.dev33</groupId>
-            <artifactId>sa-token-spring-boot3-starter</artifactId>
+            <artifactId>sa-token-spring-boot-starter</artifactId>
             <version>1.34.0</version>
         </dependency>
         <dependency>
@@ -56,11 +55,7 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
-        </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

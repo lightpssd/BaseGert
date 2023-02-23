@@ -23,7 +23,7 @@ public class HelloWorld {
     @ResponseBody
     public SaResult success(String username, String password) {
 
-        boolean b = UserStaticConfig.INSTANCE.getUsers().stream().anyMatch(r -> r.getUsername().equals(username) && r.getPassword().equals(password));
+        boolean b = UserStaticConfig.users.stream().anyMatch(r -> r.getUsername().equals(username) && r.getPassword().equals(password));
         if (b){
             StpUtil.login(username);
             return SaResult.ok("登录成功!");
