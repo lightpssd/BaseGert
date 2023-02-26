@@ -1,14 +1,19 @@
 package com.light.basegert.controller;
 
+import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.light.basegert.config.UserStaticConfig;
-import org.springframework.boot.web.servlet.error.ErrorController;
+import com.light.basegert.utils.JdbcUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.sql.SQLSyntaxErrorException;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 public class HelloWorld {
@@ -38,6 +43,8 @@ public class HelloWorld {
         return SaResult.ok("是否登录：" + StpUtil.isLogin());
     }
 
+
+
     // 查询 Token 信息
     @RequestMapping("tokenInfo")
     public SaResult tokenInfo() {
@@ -50,5 +57,18 @@ public class HelloWorld {
         StpUtil.logout();
         return SaResult.ok();
     }
+
+    @GetMapping("/test")
+    @SaIgnore
+    @ResponseBody
+    public Object lasd() throws SQLSyntaxErrorException {
+
+        List<Map<String, Object>> maps = JdbcUtils.jdbcQuerySql("select * from qwed");
+
+        return maps.toString();
+
+    }
+
+
 
 }

@@ -1,7 +1,6 @@
-package com.light.basegert.config;
+package com.light.basegert.advice;
 
 import cn.dev33.satoken.exception.NotLoginException;
-import cn.dev33.satoken.util.SaResult;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{../static/css/intellij-light.min.css}">
+    <script th:src="@{../static/js/highlight.min.js}"></script>
+    <script th:src="@{../static/js/sql.min.js}"></script>
+    <script th:src="@{../static/js/jquery-3.5.1.min.js}"></script>
+    <style>
+        .sql-text {
+            resize: none;
+            width: 700px;
+            height: 200px;
+            position: absolute;
+            z-index: 8;
+            opacity: 100%;
+            font-family: Consolas, serif;
+            font-size: large;
+            margin: 0;
+            padding: 0;
+            color: #ffffff00;
+            caret-color: #000000
+        }
+
+        .sql-text::selection {
+            color: #00000000;
+            background-color: rgba(114, 141, 206, 0.95);
+        }
+
+        .sql-context {
+            height: 220px;
+        }
+
+        #sql-show {
+            z-index: 9;
+            position: absolute;
+            font-family: Consolas, serif;
+            font-size: large;
+            margin: 0;
+            padding: 0;
+            border: 1px solid black;
+            width: 700px;
+            height: 200px;
+            pointer-events: none;
+            background-color: #0033b300;
+            word-break: break-all;
+        }
+        #sql-result{
+            width: 700px;
+            height: 400px;
+            background-color: #e5e5e5;
+            margin-top: 10px;
+        }
+        .param{
+            width: 600px;
+        }
+    </style>
+</head>
+<body>
+<h1>sql添加页面</h1>
+<form>
+    <div>
+        <label>地址：
+            <input class="param" name="address">
+        </label>
+    </div>
+    <div>
+        <label>备注：
+            <input class="param" name="remark">
+        </label>
+    </div>
+    <h3><label for="sql-text">sql 代码</label></h3>
+    <div class="sql-context">
+        <textarea id="sql-text" name="sql" class="sql-text"></textarea>
+        <div id="sql-show" class="language-sql"></div>
+    </div>
+</form>
+<div>
+    <button id="runsql">运行</button>
+</div>
+<label for="sql-result"></label><textarea id="sql-result">
+
+</textarea>
+<script>
+
+    var sqlText = document.getElementById("sql-text");
+    let show = $("#sql-show")
+    let sqlResult=$("#sql-result")
+    $("#sql-text").on("input", (e) => {
+        let value = e.target.value
+        show.html(value)
+        hljs.highlightElement(show.get(0));
+        show.html(show.html().replaceAll("\n", "<br/>"))
+    })
+    $("#runsql").click(() => {
+        sqlResult.val("")
+        $.ajax(
+            {
+                type: "GET",
+                url: "runsql",
+                dataType: "json",
+                data:{sql:sqlText.value},
+                success(resp){
+                    if (resp.code===200){
+                        sqlResult.val(JSON.stringify(resp.data))
+                    }else {
+                        alert(resp.msg)
+                    }
+                },
+                error(e){
+                    alert(e)
+                }
+            }
+        )
+    })
+
+
+</script>
+
+</body>
+
+</html>

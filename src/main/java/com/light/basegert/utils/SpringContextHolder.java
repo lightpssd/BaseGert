@@ -1,24 +1,34 @@
 package com.light.basegert.utils;
 
 
-
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class SpringContextHolder implements ApplicationContextAware {
+@Configuration
+public class SpringContextHolder implements ApplicationContextAware, BeanFactoryPostProcessor {
 
     private static ApplicationContext applicationContext;
+    private static ConfigurableListableBeanFactory configurableListableBeanFactory;
 
     /**
      * 实现ApplicationContextAware接口的context注入函数, 将其存入静态变量.
      */
-    public void setApplicationContext(ApplicationContext applicationContext) {
+    public void setApplicationContext(@NotNull ApplicationContext applicationContext) {
         SpringContextHolder.applicationContext = applicationContext; // NOSONAR
+    }
+    @Override
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
+
+        SpringContextHolder.configurableListableBeanFactory=configurableListableBeanFactory;
     }
 
     /**
@@ -38,13 +48,10 @@ public class SpringContextHolder implements ApplicationContextAware {
         return (T) applicationContext.getBean(name);
     }
 
-    /**
-     * 从静态变量ApplicationContext中取得Bean, 自动转型为所赋值对象的类型.
-     */
-    @SuppressWarnings("unchecked")
+
     public static <T> T getBean(Class<T> clazz) {
         checkApplicationContext();
-        return (T) applicationContext.getBeansOfType(clazz);
+        return (T) applicationContext.getBean(clazz);
     }
 
     /**
@@ -57,7 +64,7 @@ public class SpringContextHolder implements ApplicationContextAware {
     private static void checkApplicationContext() {
         if (applicationContext == null) {
             throw new IllegalStateException(
-                    "applicaitonContext未注入,请在applicationContext.xml中定义SpringContextHolder");
+                    "applicaitonContext未注入");
         }
     }
 
@@ -75,6 +82,7 @@ public class SpringContextHolder implements ApplicationContextAware {
     }
 
     private static final ThreadLocal<HttpServletResponse> responseThreadLocal = new ThreadLocal();
+
 
 
 }

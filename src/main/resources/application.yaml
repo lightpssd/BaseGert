@@ -1,8 +1,9 @@
 spring:
   datasource:
-    url: jdbc:sqlite:/mySqlLite.db
+    url: jdbc:sqlite:mySqlLite.db
     driver-class-name: org.sqlite.JDBC
-
+  mvc:
+    static-path-pattern: /static/**
 sa-token:
   # token名称 (同时也是cookie名称)
   token-name: satoken
