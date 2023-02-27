@@ -7,9 +7,11 @@ import cn.hutool.core.util.RandomUtil;
 import com.light.basegert.utils.JdbcUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
+import java.sql.SQLSyntaxErrorException;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -27,11 +29,26 @@ public class addSqlController {
     }
 
     @SaIgnore
-    @GetMapping("addsql")
-    public String showSql(){
+    @GetMapping("showsql")
+    public String showSql(Model model){
+
+        try {
+            List<Map<String, Object>> sqls = JdbcUtils.jdbcQuerySql("select * from sql_data");
+            model.addAttribute("sqls",sqls);
+        } catch (SQLSyntaxErrorException e) {
+            throw new RuntimeException(e);
+        }
 
         return "system/showSqlList";
     }
+    @SaIgnore
+    @GetMapping("deletesql")
+    public String deleteSql(String id){
+
+        JdbcUtils.jdbcRunning(jdbcTemplate -> jdbcTemplate.execute("delete from sql_data where id=?",id)
+        return "system/showSqlList";
+    }
+
     @SaIgnore
     @GetMapping("runsql")
     @ResponseBody
