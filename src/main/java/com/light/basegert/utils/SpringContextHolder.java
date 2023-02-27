@@ -1,7 +1,6 @@
 package com.light.basegert.utils;
 
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -22,7 +21,7 @@ public class SpringContextHolder implements ApplicationContextAware, BeanFactory
     /**
      * 实现ApplicationContextAware接口的context注入函数, 将其存入静态变量.
      */
-    public void setApplicationContext(@NotNull ApplicationContext applicationContext) {
+    public void setApplicationContext( ApplicationContext applicationContext) {
         SpringContextHolder.applicationContext = applicationContext; // NOSONAR
     }
     @Override

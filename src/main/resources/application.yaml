@@ -1,7 +1,17 @@
 spring:
   datasource:
-    url: jdbc:sqlite:mySqlLite.db
-    driver-class-name: org.sqlite.JDBC
+    dynamic:
+      primary: master
+      datasource:
+        master: #主数据源
+          url: jdbc:sqlite:mySqlLite.db
+          driver-class-name: org.sqlite.JDBC
+        edge: #子数据源
+          driver-class-name: com.ddtek.jdbc.openedge.OpenEdgeDriver
+          url: jdbc:datadirect:openedge://192.9.200.74:6093;databaseName=mesprod
+          username: mfg
+          password:
+
   mvc:
     static-path-pattern: /static/**
 sa-token:

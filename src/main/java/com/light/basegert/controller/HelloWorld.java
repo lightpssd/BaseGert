@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +62,7 @@ public class HelloWorld {
     @GetMapping("/test")
     @SaIgnore
     @ResponseBody
-    public Object lasd() throws SQLSyntaxErrorException {
+    public Object lasd() throws SQLSyntaxErrorException, SQLFeatureNotSupportedException {
 
         List<Map<String, Object>> maps = JdbcUtils.jdbcQuerySql("select * from qwed");
 
