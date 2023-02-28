@@ -1,9 +1,9 @@
 package com.light.basegert.controller;
 
-import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.util.SaResult;
 import cn.hutool.core.lang.id.NanoId;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.light.basegert.utils.JdbcUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -21,52 +21,94 @@ import java.util.regex.Pattern;
 @RequestMapping("/sql")
 @Slf4j
 public class addSqlController {
-    @SaIgnore
+
     @GetMapping("addsql")
-    public String addSql(){
+    public String addSql() {
 
         return "system/addsql";
     }
 
-    @SaIgnore
+
+    @GetMapping("updatesql")
+    public String updateSqlHtml(String id, Model model) {
+
+        Map<String, Object> maps = JdbcUtils.jdbcRunning(jdbcTemplate -> jdbcTemplate.queryForMap("select * from sql_data where id=?", id));
+
+        model.addAttribute("result", maps);
+        return "system/updatesql";
+    }
+
+
+    @PostMapping("updatesql")
+    @ResponseBody
+    public SaResult updateSql(String id, String address, String remark, String sql, String dataName) {
+        String regex = "^[a-zA-Z0-9]{6,}$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(address);
+        // 判断是否匹配成功
+        if (!matcher.matches()) {
+            return SaResult.error("地址不合法");
+        }
+        System.out.println(id);
+        Boolean hasAddress = JdbcUtils.jdbcRunning(jdbcTemplate -> {
+            Map<String, Object> count = jdbcTemplate.queryForMap("select count(*) as c from sql_data where address=? and id!=?", address,id);
+            return (Integer) count.get("c") > 0;
+        });
+        if (hasAddress) {
+            return SaResult.error("地址重复");
+        }
+
+        Integer integer = JdbcUtils.jdbcRunning(jdbcTemplate ->
+                jdbcTemplate.update(
+                        "update  sql_data set dataName=?,sql_string=?,address=?,remark=? where id=?"
+                        , dataName, sql, address, remark, id));
+        if (integer > 0)
+            return SaResult.ok();
+        else
+            return SaResult.error("更新出错，请稍后再试");
+    }
+
+
     @GetMapping("showsql")
-    public String showSql(Model model){
+    public String showSql(Model model) {
 
         try {
             List<Map<String, Object>> sqls = JdbcUtils.jdbcQuerySql("select * from sql_data");
-            model.addAttribute("sqls",sqls);
+            model.addAttribute("sqls", sqls);
         } catch (SQLSyntaxErrorException e) {
             throw new RuntimeException(e);
         }
 
         return "system/showSqlList";
     }
-    @SaIgnore
-    @GetMapping("deletesql")
-    public String deleteSql(String id){
 
-        JdbcUtils.jdbcRunning(jdbcTemplate -> jdbcTemplate.execute("delete from sql_data where id=?",id)
-        return "system/showSqlList";
+
+    @GetMapping("deletesql")
+    public String deleteSql(String id) {
+
+        JdbcUtils.jdbcRunning(jdbcTemplate -> jdbcTemplate.update("delete from sql_data where id=?", id));
+
+        return "redirect:showsql";
     }
 
-    @SaIgnore
+
     @GetMapping("runsql")
     @ResponseBody
-    public SaResult runSql(@RequestParam(defaultValue = "master") String dataName, String sql){
+    public SaResult runSql(@RequestParam(defaultValue = "master") String dataName, String sql) {
 
         try {
-            List<Map<String, Object>> maps = JdbcUtils.jdbcQuerySql(dataName,sql);
-            return new SaResult(SaResult.CODE_SUCCESS,"查找成功",maps);
-        }catch (SQLException e){
-           return SaResult.error(e.getMessage());
+            List<Map<String, Object>> maps = JdbcUtils.jdbcQuerySql(dataName, sql);
+            return new SaResult(SaResult.CODE_SUCCESS, "查找成功", maps);
+        } catch (SQLException e) {
+            return SaResult.error(e.getMessage());
         }
 
     }
 
-    @SaIgnore
+
     @PostMapping("savesql")
     @ResponseBody
-    public SaResult saveSql(String address,String remark,String sql,String dataName) {
+    public SaResult saveSql(String address, String remark, String sql, String dataName) {
 
         String regex = "^[a-zA-Z0-9]{6,}$";
         Pattern pattern = Pattern.compile(regex);
@@ -75,23 +117,26 @@ public class addSqlController {
         if (!matcher.matches()) {
             return SaResult.error("地址不合法");
         }
+        if (StrUtil.isEmpty(sql)){
+            return SaResult.error("不存在sql语句");
+        }
         Boolean hasAddress = JdbcUtils.jdbcRunning(jdbcTemplate -> {
             Map<String, Object> count = jdbcTemplate.queryForMap("select count(*) as c from sql_data where address=?", address);
             return (Integer) count.get("c") > 0;
         });
-        if (hasAddress){
+        if (hasAddress) {
             return SaResult.error("地址重复");
         }
         JdbcUtils.jdbcRunning(jdbcTemplate -> jdbcTemplate.update("insert into sql_data(dataName,sql_string,address,remark) values (?,?,?,?)", dataName, sql, address, remark));
         return SaResult.ok();
     }
 
-    @SaIgnore
+
     @GetMapping("randomString")
     @ResponseBody
-    public SaResult randomString(){
+    public SaResult randomString() {
         String s = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        return SaResult.data(NanoId.randomNanoId(RandomUtil.getRandom(),s.toCharArray(),RandomUtil.randomInt(6,18)));
+        return SaResult.data(NanoId.randomNanoId(RandomUtil.getRandom(), s.toCharArray(), RandomUtil.randomInt(6, 18)));
     }
 
 }

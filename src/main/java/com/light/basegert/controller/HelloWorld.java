@@ -1,20 +1,12 @@
 package com.light.basegert.controller;
 
-import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.light.basegert.config.UserStaticConfig;
-import com.light.basegert.utils.JdbcUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.sql.SQLFeatureNotSupportedException;
-import java.sql.SQLSyntaxErrorException;
-import java.util.List;
-import java.util.Map;
 
 @Controller
 public class HelloWorld {
@@ -26,16 +18,15 @@ public class HelloWorld {
     }
 
     @PostMapping("/login")
-    @ResponseBody
-    public SaResult success(String username, String password) {
+    public String success(String username, String password) {
 
         boolean b = UserStaticConfig.users.stream().anyMatch(r -> r.getUsername().equals(username) && r.getPassword().equals(password));
         if (b){
             StpUtil.login(username);
-            return SaResult.ok("登录成功!");
+            return "redirect:/sql/showsql";
         }
 
-        return SaResult.error("登录失败");
+        return "system/loginfail";
     }
 
     // 查询登录状态
@@ -59,16 +50,7 @@ public class HelloWorld {
         return SaResult.ok();
     }
 
-    @GetMapping("/test")
-    @SaIgnore
-    @ResponseBody
-    public Object lasd() throws SQLSyntaxErrorException, SQLFeatureNotSupportedException {
 
-        List<Map<String, Object>> maps = JdbcUtils.jdbcQuerySql("select * from qwed");
-
-        return maps.toString();
-
-    }
 
 
 
