@@ -2,15 +2,21 @@ package com.light.basegert.controller;
 
 import cn.dev33.satoken.util.SaResult;
 import cn.hutool.core.util.StrUtil;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalListener;
 import com.light.basegert.utils.JdbcUtils;
+import com.light.basegert.utils.SqlReaderUtil;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.sql.SQLSyntaxErrorException;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * ClassName: runSqlController
@@ -22,6 +28,34 @@ import java.util.Map;
 @RequestMapping("openapi")
 public class runSqlController {
 
+    private static final LoadingCache<String, String> sqlcache =
+            CacheBuilder.newBuilder()
+                    // 初始化容量
+                    .initialCapacity(4)
+                    // 缓存池大小，在缓存数量到达该大小时， Guava开始回收旧的数据
+                    .maximumSize(100)
+                    // 设置时间对象没有被读/写访问则对象从内存中删除(在另外的线程里面不定期维护)
+                    .expireAfterAccess(5, TimeUnit.MINUTES)
+                    // 设置缓存在写入之后 设定时间 后失效
+                    .expireAfterWrite(5, TimeUnit.MINUTES)
+                    // 数据被移除时的监听器, 缓存项被移除时会触发执行
+                    .removalListener((RemovalListener<String, String>) rn -> {
+                        System.out.println(String.format("数据key:%s value:%s 因为%s被移除了", rn.getKey(), rn.getValue(),
+                                rn.getCause().name()));
+                    })
+                    // 开启Guava Cache的统计功能
+                    .recordStats()
+                    // 数据写入后被多久刷新一次
+                    .refreshAfterWrite(30, TimeUnit.SECONDS)
+                    // 数据并发级别
+                    .concurrencyLevel(16)
+                    // 当缓存中没有数据时的数据加载器
+                    .build(new CacheLoader<String, String>() {
+                        @Override
+                        public String load(String key) {
+                            return "";
+                        }
+                    });
     @GetMapping("/{address}")
     public Object run(@PathVariable("address") String address) throws SQLSyntaxErrorException {
         Map<String, Object> result = JdbcUtils.jdbcRunning(jdbcTemplate -> {
@@ -49,5 +83,21 @@ public class runSqlController {
             return SaResult.error("数据库名无效");
         }
         return JdbcUtils.jdbcQuerySql(dataName,sqlStr);
+    }
+    @GetMapping("/{dataName}/{address}")
+    public Object runSql(@PathVariable("address") String address,@PathVariable("dataName") String dataName) throws SQLSyntaxErrorException, ExecutionException {
+
+        String sql = sqlcache.get(address);
+        if (StrUtil.isEmpty(sql)){
+            sql = SqlReaderUtil.readSql(address);
+            if (StrUtil.isEmpty(sql)){
+                return SaResult.error("sql语句无效");
+            }
+            sqlcache.put(address,sql);
+        }
+        if (StrUtil.isEmpty(dataName)){
+            return SaResult.error("数据库名无效");
+        }
+        return JdbcUtils.jdbcQuerySql(dataName,sql);
     }
 }
