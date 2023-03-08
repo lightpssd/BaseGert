@@ -68,28 +68,21 @@
 </head>
 <body>
 <h1>sql修改页面</h1>
+<label id="sql-id" th:text="${result.id}" ></label>
 <div>
     <div>
         <label>地址：
-            <input class="param" name="address" id="address">
-        </label>
-        <button id="randomString">帮我选一个</button>
-        <label>需要大于5且包含由字母和数字组成的字符串</label>
-    </div>
-    <div>
-        <label> 参数输入,使用’?‘（英文）分开
-            <input class="param" name="param" id="param">
+            <input class="param" disabled name="address" id="address" th:value="${result.address}">
         </label>
     </div>
     <div>
         <label>备注：
-            <input class="param" name="remark" id="remark">
+            <input class="param" name="remark" id="remark"  th:value="${result.remark}">
         </label>
     </div>
-
     <div>
         <label>数据库:
-            <select id="dataName" name="dataName">
+            <select id="dataName" name="dataName"  th:value="${result.dataName}">
                 <option value="master">标准</option>
                 <option value="edga">mes</option>
             </select>
@@ -97,14 +90,9 @@
     </div>
     <h3><label for="sql-text">sql 代码</label></h3>
     <div class="sql-context">
-        <textarea id="sql-text" name="sql" class="sql-text"></textarea>
-        <div id="sql-show" class="language-sql"></div>
+        <textarea id="sql-text" name="sql" class="sql-text" th:text="${result.sql_string}"></textarea>
+        <div id="sql-show" class="language-sql" th:text="${result.sql_string}"></div>
     </div>
-</div>
-<div>
-    <label> 参数输入,使用’?‘（英文）分开
-        <input class="param" name="param" id="paramdata">
-    </label>
 </div>
 <div>
     <button class="button" id="runsql">运行</button>
@@ -119,7 +107,6 @@
     var sqlText = document.getElementById("sql-text");
     let show = $("#sql-show")
     let sqlResult = $("#sql-result")
-
     $("#sql-text").on("input", (e) => {
         let value = e.target.value
         show.html(value)
@@ -133,7 +120,7 @@
                 type: "GET",
                 url: "runsql",
                 dataType: "json",
-                data: {sql: sqlText.value, dataName: $("#dataName").val(),paramdata: $("#paramdata").val()},
+                data: {sql: sqlText.value, dataName: $("#dataName").val()},
                 success(resp) {
                     if (resp.code === 200) {
                         sqlResult.val(JSON.stringify(resp.data))
@@ -149,11 +136,11 @@
     })
     $("#savesql").click(() => {
         let data = {
+            id:$("#sql-id").text(),
             sql: sqlText.value,
             dataName: $("#dataName").val(),
             address: $("#address").val(),
             remark: $("#remark").val(),
-            param: $("#param").val()
         }
         if (data.address === null || data.address.length === 0) {
             alert("地址必填")
@@ -166,13 +153,13 @@
         $.ajax(
             {
                 type: "Post",
-                url: "savesql",
+                url: "updatesql",
                 dataType: "json",
                 data,
                 success(resp) {
                     if (resp.code === 200) {
-                        alert("保存成功")
-                        window.location = "showsql";
+                        alert("修改成功")
+                        window.location="showsql";
                     } else {
                         alert(resp.msg)
                     }

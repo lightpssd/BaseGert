@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+    <meta charset="UTF-8">
+    <title>sqlShow</title>
+    <style>
+        table{
+            width: 100%;
+
+            border: 1px #000000 solid;
+        }
+        table th{
+            border: 1px #000000 solid;
+        }
+        table td{
+            border: 1px #000000 solid;
+            padding: 0;
+            text-align: center;
+        }
+        table tr:nth-child(even){
+            background-color: #cfe9ff;
+        }
+        .context{
+            width: 700px;
+            height: 100%;
+            margin: 0;
+           word-break: break-all;
+            line-height: 20px;
+            text-align: left;
+        }
+        .sql-td{
+            width: 720px;
+        }
+    </style>
+</head>
+
+<body>
+<a th:href="@{addsql}">添加</a>
+<table>
+    <thead>
+    <tr>
+    <th>id</th>
+    <th>备注</th>
+    <th>地址</th>
+    <th>sql</th>
+    <th>数据库名</th>
+    <th>操作</th>
+    </tr>
+
+    </thead>
+    <tbody>
+    <tr th:each="sql,iterStat :${sqls}">
+        <td th:text="${iterStat.index+1}">None</td>
+        <td th:text="${sql.remark}">None</td>
+        <td th:text="'/openapi/'+${sql.address}"></td>
+        <td class="sql-td">
+            <div class="context" th:text="${sql.sql_string}">None</div>
+        </td>
+        <td th:text="${sql.dataName}">None
+        </td>
+        <td>
+            <a th:href="@{/sql/deletesql(id=${sql.id})}">删除</a>
+            <a th:href="@{/sql/updatesql(id=${sql.id})}">修改</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录失败</title>
+</head>
+<body>
+登录失败,<span id="miao">3</span>秒后跳转到登录页面
+</body>
+<script>
+    let s=2;
+    let miao=document.getElementById("miao")
+    setInterval(()=>{
+        miao.innerText=s;
+        s-=1
+        if (s===0){
+            window.location="/login"
+        }
+
+    },1000)
+</script>
+</html>
