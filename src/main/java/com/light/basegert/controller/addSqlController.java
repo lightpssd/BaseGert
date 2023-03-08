@@ -72,10 +72,10 @@ public class addSqlController {
 
 
     @GetMapping("showsql")
-    public String showSql(Model model) {
+    public String showSql(Model model,String dataName,String remark) {
 
         try {
-            List<Map<String, Object>> sqls = JdbcUtils.jdbcQuerySql("select * from sql_data");
+            List<Map<String, Object>> sqls = JdbcUtils.jdbcQuerySql("master","select * from sql_data where remark like ? and dataName like ?","%"+StrUtil.nullToEmpty(remark)+"%","%"+StrUtil.nullToEmpty(dataName)+"%");
             sqls.forEach(r->{
                 String param = (String) r.getOrDefault("param","");
                 if (StrUtil.isEmpty(param))

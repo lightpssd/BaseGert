@@ -41,6 +41,15 @@
 
 <body>
 <a th:href="@{addsql}">添加</a>
+<form action="showsql">
+    <label>备注
+        <input name="remark" >
+    </label>
+    <label>数据库
+        <input name="dataName" >
+    </label>
+    <input type="submit" value="查找">
+</form>
 <table>
     <thead>
     <tr>
