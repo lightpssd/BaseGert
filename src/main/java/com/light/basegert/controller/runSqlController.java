@@ -56,7 +56,7 @@ public class runSqlController {
                             return "";
                         }
                     });
-    @GetMapping("/{address}")
+    @GetMapping("{address}")
     public Object run(@PathVariable("address") String address) throws SQLSyntaxErrorException {
         Map<String, Object> result = JdbcUtils.jdbcRunning(jdbcTemplate -> {
             try {

@@ -94,8 +94,10 @@ public class addSqlController {
 
     @GetMapping("runsql")
     @ResponseBody
-    public SaResult runSql(@RequestParam(defaultValue = "master") String dataName, String sql) {
-
+    public SaResult runSql(@RequestParam(defaultValue = "master") String dataName, String sql,String paramdata) {
+        if (StrUtil.count(sql,'?')!=paramdata.split("\\?").length){
+            return SaResult.error("参数数量错误");
+        }
         try {
             List<Map<String, Object>> maps = JdbcUtils.jdbcQuerySql(dataName, sql);
             return new SaResult(SaResult.CODE_SUCCESS, "查找成功", maps);
