@@ -1,6 +1,7 @@
 package com.light.basegert.controller;
 
 import cn.dev33.satoken.util.SaResult;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -9,11 +10,11 @@ import com.google.common.cache.RemovalListener;
 import com.light.basegert.utils.JdbcUtils;
 import com.light.basegert.utils.SqlReaderUtil;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import java.sql.SQLSyntaxErrorException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -57,7 +58,8 @@ public class runSqlController {
                         }
                     });
     @GetMapping("{address}")
-    public Object run(@PathVariable("address") String address) throws SQLSyntaxErrorException {
+    public Object run(@PathVariable("address") String address, @RequestParam Map<String, String> args) throws SQLSyntaxErrorException {
+
         Map<String, Object> result = JdbcUtils.jdbcRunning(jdbcTemplate -> {
             try {
                 return jdbcTemplate.queryForMap("select * from sql_data where address=?", address);
@@ -82,7 +84,19 @@ public class runSqlController {
         if (StrUtil.isEmpty(dataName)){
             return SaResult.error("数据库名无效");
         }
-        return JdbcUtils.jdbcQuerySql(dataName,sqlStr);
+        String param = (String) result.get("param");
+        if (StrUtil.isEmpty(param)&&args.isEmpty())
+            return JdbcUtils.jdbcQuerySql(dataName,sqlStr);
+
+
+        HashSet<String> split = CollUtil.set(true, (param.split("\\?")));
+
+        if (!args.keySet().containsAll(split)||split.size()!=args.size()){
+            return SaResult.error("参数不匹配!");
+        }
+        String[] as = split.stream().map(args::get).toArray(String[]::new);
+        System.out.println(Arrays.toString(as));
+        return JdbcUtils.jdbcQuerySql(dataName,sqlStr,as);
     }
     @GetMapping("/{dataName}/{address}")
     public Object runSql(@PathVariable("address") String address,@PathVariable("dataName") String dataName) throws SQLSyntaxErrorException, ExecutionException {

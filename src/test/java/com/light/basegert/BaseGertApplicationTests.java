@@ -1,13 +1,10 @@
 package com.light.basegert;
 
-import com.light.basegert.utils.SpringContextHolder;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
-import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -36,6 +33,12 @@ class BaseGertApplicationTests {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+    }
+
+    public static void main(String[] args) {
+
+
 
     }
 

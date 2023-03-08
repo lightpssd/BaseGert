@@ -34,6 +34,18 @@ public class JdbcUtils {
         return jdbcRunning(dataName,jdbcTemplate -> jdbcTemplate.queryForList(sql));
     }
 
+    public static List<Map<String,Object>> jdbcQuerySql(String dataName, String sql,String ...args) throws SQLSyntaxErrorException {
+        if (StrUtil.isEmpty(sql)){
+            throw new SQLSyntaxErrorException("sql空语句");
+        }
+        if (!sql.trim().startsWith("select")){
+            throw new SQLSyntaxErrorException("非查询语句");
+        }
+        log.info("运行sql语句:"+sql);
+        return jdbcRunning(dataName,jdbcTemplate -> jdbcTemplate.queryForList(sql, (Object[]) args));
+
+    }
+
     public static List<Map<String,Object>> jdbcQuerySql(String sql) throws SQLSyntaxErrorException {
         return jdbcQuerySql("master",sql);
     }

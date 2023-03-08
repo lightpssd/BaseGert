@@ -77,7 +77,7 @@
         <label>需要大于5且包含由字母和数字组成的字符串</label>
     </div>
     <div>
-        <label> 参数输入,使用’?‘（英文）分开
+        <label> 参数输入,使用’?‘（英文）分开,顺序需要与sql语句中的?对应
             <input class="param" name="param" id="param">
         </label>
     </div>
@@ -122,7 +122,7 @@
 
     $("#sql-text").on("input", (e) => {
         let value = e.target.value
-        show.html(value)
+        show.html(value.replaceAll("<", "&lt;").replaceAll(">", "&gt;"))
         hljs.highlightElement(show.get(0));
         show.html(show.html().replaceAll("\n", "<br/>"))
     })

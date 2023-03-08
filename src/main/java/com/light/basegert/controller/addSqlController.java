@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/sql")
@@ -41,7 +43,7 @@ public class addSqlController {
 
     @PostMapping("updatesql")
     @ResponseBody
-    public SaResult updateSql(String id, String address, String remark, String sql, String dataName) {
+    public SaResult updateSql(String id, String address, String remark, String sql, String dataName,String param) {
         String regex = "^[a-zA-Z0-9]{6,}$";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(address);
@@ -49,7 +51,7 @@ public class addSqlController {
         if (!matcher.matches()) {
             return SaResult.error("地址不合法");
         }
-        System.out.println(id);
+
         Boolean hasAddress = JdbcUtils.jdbcRunning(jdbcTemplate -> {
             Map<String, Object> count = jdbcTemplate.queryForMap("select count(*) as c from sql_data where address=? and id!=?", address,id);
             return (Integer) count.get("c") > 0;
@@ -60,8 +62,8 @@ public class addSqlController {
 
         Integer integer = JdbcUtils.jdbcRunning(jdbcTemplate ->
                 jdbcTemplate.update(
-                        "update  sql_data set dataName=?,sql_string=?,address=?,remark=? where id=?"
-                        , dataName, sql, address, remark, id));
+                        "update  sql_data set dataName=?,sql_string=?,address=?,remark=?,param=? where id=?"
+                        , dataName, sql, address, remark,param, id));
         if (integer > 0)
             return SaResult.ok();
         else
@@ -74,6 +76,13 @@ public class addSqlController {
 
         try {
             List<Map<String, Object>> sqls = JdbcUtils.jdbcQuerySql("select * from sql_data");
+            sqls.forEach(r->{
+                String param = (String) r.getOrDefault("param","");
+                if (StrUtil.isEmpty(param))
+                    r.put("param","");
+                else
+                    r.put("param","?"+StrUtil.join("&", Arrays.stream(param.split("\\?")).map(s->s+"={}").collect(Collectors.toList())));
+            });
             model.addAttribute("sqls", sqls);
         } catch (SQLSyntaxErrorException e) {
             throw new RuntimeException(e);
@@ -91,26 +100,25 @@ public class addSqlController {
         return "redirect:showsql";
     }
 
-
     @GetMapping("runsql")
     @ResponseBody
     public SaResult runSql(@RequestParam(defaultValue = "master") String dataName, String sql,String paramdata) {
-        if (StrUtil.count(sql,'?')!=paramdata.split("\\?").length){
+        String[] split = StrUtil.isEmpty(paramdata)? new String[0] :paramdata.split("\\?");
+        if (StrUtil.count(sql,'?')!=split.length){
             return SaResult.error("参数数量错误");
         }
         try {
-            List<Map<String, Object>> maps = JdbcUtils.jdbcQuerySql(dataName, sql);
+            List<Map<String, Object>> maps = JdbcUtils.jdbcQuerySql(dataName, sql,split);
             return new SaResult(SaResult.CODE_SUCCESS, "查找成功", maps);
         } catch (SQLException e) {
             return SaResult.error(e.getMessage());
         }
-
     }
 
 
     @PostMapping("savesql")
     @ResponseBody
-    public SaResult saveSql(String address, String remark, String sql, String dataName) {
+    public SaResult saveSql(String address, String remark, String sql, String dataName,String param) {
 
         String regex = "^[a-zA-Z0-9]{6,}$";
         Pattern pattern = Pattern.compile(regex);
@@ -129,7 +137,7 @@ public class addSqlController {
         if (hasAddress) {
             return SaResult.error("地址重复");
         }
-        JdbcUtils.jdbcRunning(jdbcTemplate -> jdbcTemplate.update("insert into sql_data(dataName,sql_string,address,remark) values (?,?,?,?)", dataName, sql, address, remark));
+        JdbcUtils.jdbcRunning(jdbcTemplate -> jdbcTemplate.update("insert into sql_data(dataName,sql_string,address,remark,param) values (?,?,?,?,?)", dataName, sql, address, remark,param));
         return SaResult.ok();
     }
 

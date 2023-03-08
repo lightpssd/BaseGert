@@ -76,6 +76,11 @@
         </label>
     </div>
     <div>
+        <label> 参数输入,使用’?‘（英文）分开,顺序需要与sql语句中的?对应
+            <input class="param" name="param" id="param" th:value="${result.param}">
+        </label>
+    </div>
+    <div>
         <label>备注：
             <input class="param" name="remark" id="remark"  th:value="${result.remark}">
         </label>
@@ -93,6 +98,11 @@
         <textarea id="sql-text" name="sql" class="sql-text" th:text="${result.sql_string}"></textarea>
         <div id="sql-show" class="language-sql" th:text="${result.sql_string}"></div>
     </div>
+</div>
+<div>
+    <label> 参数输入,使用’?‘（英文）分开
+        <input class="param" name="param" id="paramdata">
+    </label>
 </div>
 <div>
     <button class="button" id="runsql">运行</button>
@@ -120,7 +130,7 @@
                 type: "GET",
                 url: "runsql",
                 dataType: "json",
-                data: {sql: sqlText.value, dataName: $("#dataName").val()},
+                data: {sql: sqlText.value, dataName: $("#dataName").val(),paramdata: $("#paramdata").val()},
                 success(resp) {
                     if (resp.code === 200) {
                         sqlResult.val(JSON.stringify(resp.data))
@@ -141,6 +151,7 @@
             dataName: $("#dataName").val(),
             address: $("#address").val(),
             remark: $("#remark").val(),
+            param: $("#param").val()
         }
         if (data.address === null || data.address.length === 0) {
             alert("地址必填")
