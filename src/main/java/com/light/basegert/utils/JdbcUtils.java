@@ -47,6 +47,7 @@ public class JdbcUtils {
     }
 
     public static List<Map<String,Object>> jdbcQuerySql(String sql) throws SQLSyntaxErrorException {
+        
         return jdbcQuerySql("master",sql);
     }
 
